@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+.vs/
+churn-ml/.venv/
+churn-ml/__pycache__/
+churn-ml/model.joblib
+*.py[cod]

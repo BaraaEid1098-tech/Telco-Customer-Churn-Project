@@ -1,0 +1,68 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong development password}
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./DB/ChurnPredictionDB.bak:/backup/ChurnPredictionDB.bak:ro,Z
+    ports:
+      - "127.0.0.1:1433:1433"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
+          -P "$${MSSQL_SA_PASSWORD}" -C -b -Q "SELECT 1" -o /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong development password}
+    volumes:
+      - ./scripts/restore-db.sh:/scripts/restore-db.sh:ro,Z
+    entrypoint: ["/bin/bash", "/scripts/restore-db.sh"]
+    restart: "no"
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: BackEnd/Dockerfile
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ChurnPredictionDB;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong development password};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      Redis__ConnectionString: redis:6379
+      MLService__BaseUrl: ${ML_SERVICE_BASE_URL:-http://host.docker.internal:8000/}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:

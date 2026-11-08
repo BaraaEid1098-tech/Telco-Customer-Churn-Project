@@ -1,0 +1,281 @@
+{
+  "model_version": "1.0.0",
+  "training_date_utc": "2026-11-08T05:11:00.378102+00:00",
+  "dataset": "WA_Fn-UseC_-Telco-Customer-Churn.csv",
+  "split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratified": true,
+    "train_rows": 5634,
+    "test_rows": 1409
+  },
+  "feature_names": [
+    "SeniorCitizen",
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges",
+    "gender_Male",
+    "Partner_Yes",
+    "Dependents_Yes",
+    "PhoneService_Yes",
+    "MultipleLines_Yes",
+    "InternetService_Fiber optic",
+    "InternetService_No",
+    "OnlineSecurity_Yes",
+    "OnlineBackup_Yes",
+    "DeviceProtection_Yes",
+    "TechSupport_Yes",
+    "StreamingTV_Yes",
+    "StreamingMovies_Yes",
+    "Contract_One year",
+    "Contract_Two year",
+    "PaperlessBilling_Yes",
+    "PaymentMethod_Credit card (automatic)",
+    "PaymentMethod_Electronic check",
+    "PaymentMethod_Mailed check"
+  ],
+  "numeric_cols": [
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges"
+  ],
+  "threshold_selection": {
+    "method": "minimum out-of-fold training cost; ties broken by F1",
+    "cross_validation": "5-fold StratifiedKFold, shuffle=True, random_state=42",
+    "false_negative_cost": 5,
+    "false_positive_cost": 1,
+    "best_model_by_training_oof_cost": "Random Forest"
+  },
+  "models": {
+    "Dummy (most frequent)": {
+      "model_file": "dummy_most_frequent.joblib",
+      "hyperparameters": {
+        "strategy": "most_frequent"
+      },
+      "chosen_threshold": 0.0,
+      "training_oof_cost": 4139.0,
+      "training_oof_f1_at_chosen_threshold": 0.4194136625052602,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.0,
+          "precision": 0.0,
+          "f1_score": 0.0,
+          "roc_auc": 0.5,
+          "pr_auc": 0.2654364797728886,
+          "accuracy": 0.7345635202271115,
+          "chosen_threshold": 0.5,
+          "tp": 0,
+          "fp": 0,
+          "tn": 1035,
+          "fn": 374
+        },
+        "cost_tuned": {
+          "recall": 1.0,
+          "precision": 0.2654364797728886,
+          "f1_score": 0.4195176668536175,
+          "roc_auc": 0.5,
+          "pr_auc": 0.2654364797728886,
+          "accuracy": 0.2654364797728886,
+          "chosen_threshold": 0.0,
+          "tp": 374,
+          "fp": 1035,
+          "tn": 0,
+          "fn": 0
+        }
+      }
+    },
+    "Logistic Regression": {
+      "model_file": "logistic_regression.joblib",
+      "hyperparameters": {
+        "class_weight": "balanced",
+        "random_state": 42,
+        "max_iter": 1000
+      },
+      "chosen_threshold": 0.3224659987423034,
+      "training_oof_cost": 2378.0,
+      "training_oof_f1_at_chosen_threshold": 0.5906558079725676,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.786096256684492,
+          "precision": 0.506896551724138,
+          "f1_score": 0.6163522012578616,
+          "roc_auc": 0.8418739827946989,
+          "pr_auc": 0.6340887879557676,
+          "accuracy": 0.7402413058907026,
+          "chosen_threshold": 0.5,
+          "tp": 294,
+          "fp": 286,
+          "tn": 749,
+          "fn": 80
+        },
+        "cost_tuned": {
+          "recall": 0.9197860962566845,
+          "precision": 0.43765903307888043,
+          "f1_score": 0.593103448275862,
+          "roc_auc": 0.8418739827946989,
+          "pr_auc": 0.6340887879557676,
+          "accuracy": 0.6650106458481192,
+          "chosen_threshold": 0.3224659987423034,
+          "tp": 344,
+          "fp": 442,
+          "tn": 593,
+          "fn": 30
+        }
+      }
+    },
+    "KNN": {
+      "model_file": "knn.joblib",
+      "hyperparameters": {
+        "n_neighbors": 21,
+        "weights": "uniform"
+      },
+      "chosen_threshold": 0.19047619047619047,
+      "training_oof_cost": 2560.0,
+      "training_oof_f1_at_chosen_threshold": 0.5732323232323232,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.5668449197860963,
+          "precision": 0.5921787709497207,
+          "f1_score": 0.5792349726775956,
+          "roc_auc": 0.8255754475703325,
+          "pr_auc": 0.60445277648381,
+          "accuracy": 0.7814052519517388,
+          "chosen_threshold": 0.5,
+          "tp": 212,
+          "fp": 146,
+          "tn": 889,
+          "fn": 162
+        },
+        "cost_tuned": {
+          "recall": 0.9171122994652406,
+          "precision": 0.4213759213759214,
+          "f1_score": 0.5774410774410774,
+          "roc_auc": 0.8255754475703325,
+          "pr_auc": 0.60445277648381,
+          "accuracy": 0.6437189496096523,
+          "chosen_threshold": 0.19047619047619047,
+          "tp": 343,
+          "fp": 471,
+          "tn": 564,
+          "fn": 31
+        }
+      }
+    },
+    "Naive Bayes": {
+      "model_file": "naive_bayes.joblib",
+      "hyperparameters": {
+        "var_smoothing": 1e-12
+      },
+      "chosen_threshold": 0.0027194729023382706,
+      "training_oof_cost": 2553.0,
+      "training_oof_f1_at_chosen_threshold": 0.5734706747950389,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.7513368983957219,
+          "precision": 0.5137111517367459,
+          "f1_score": 0.6102062975027145,
+          "roc_auc": 0.8234699940582294,
+          "pr_auc": 0.5931495501469051,
+          "accuracy": 0.7452093683463449,
+          "chosen_threshold": 0.5,
+          "tp": 281,
+          "fp": 266,
+          "tn": 769,
+          "fn": 93
+        },
+        "cost_tuned": {
+          "recall": 0.9171122994652406,
+          "precision": 0.4162621359223301,
+          "f1_score": 0.5726210350584308,
+          "roc_auc": 0.8234699940582294,
+          "pr_auc": 0.5931495501469051,
+          "accuracy": 0.6366217175301633,
+          "chosen_threshold": 0.0027194729023382706,
+          "tp": 343,
+          "fp": 481,
+          "tn": 554,
+          "fn": 31
+        }
+      }
+    },
+    "Decision Tree": {
+      "model_file": "decision_tree.joblib",
+      "hyperparameters": {
+        "class_weight": "balanced",
+        "max_depth": 8,
+        "min_samples_leaf": 50
+      },
+      "chosen_threshold": 0.34532374100719376,
+      "training_oof_cost": 2543.0,
+      "training_oof_f1_at_chosen_threshold": 0.5899216125419933,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.7941176470588235,
+          "precision": 0.5068259385665529,
+          "f1_score": 0.61875,
+          "roc_auc": 0.8355266217158801,
+          "pr_auc": 0.6357386890861022,
+          "accuracy": 0.7402413058907026,
+          "chosen_threshold": 0.5,
+          "tp": 297,
+          "fp": 289,
+          "tn": 746,
+          "fn": 77
+        },
+        "cost_tuned": {
+          "recall": 0.8823529411764706,
+          "precision": 0.44058744993324434,
+          "f1_score": 0.5877114870881567,
+          "roc_auc": 0.8355266217158801,
+          "pr_auc": 0.6357386890861022,
+          "accuracy": 0.6713981547196594,
+          "chosen_threshold": 0.34532374100719376,
+          "tp": 330,
+          "fp": 419,
+          "tn": 616,
+          "fn": 44
+        }
+      }
+    },
+    "Random Forest": {
+      "model_file": "random_forest.joblib",
+      "hyperparameters": {
+        "class_weight": "balanced_subsample",
+        "max_depth": 8,
+        "min_samples_leaf": 5,
+        "n_estimators": 100
+      },
+      "chosen_threshold": 0.3734385505274146,
+      "training_oof_cost": 2350.0,
+      "training_oof_f1_at_chosen_threshold": 0.6177715091678421,
+      "test_metrics": {
+        "default_0.50": {
+          "recall": 0.7727272727272727,
+          "precision": 0.536178107606679,
+          "f1_score": 0.6330777656078861,
+          "roc_auc": 0.8471311581286005,
+          "pr_auc": 0.6569810809975417,
+          "accuracy": 0.7622427253371186,
+          "chosen_threshold": 0.5,
+          "tp": 289,
+          "fp": 250,
+          "tn": 785,
+          "fn": 85
+        },
+        "cost_tuned": {
+          "recall": 0.8636363636363636,
+          "precision": 0.47569955817378495,
+          "f1_score": 0.6134852801519468,
+          "roc_auc": 0.8471311581286005,
+          "pr_auc": 0.6569810809975417,
+          "accuracy": 0.7111426543647977,
+          "chosen_threshold": 0.3734385505274146,
+          "tp": 323,
+          "fp": 356,
+          "tn": 679,
+          "fn": 51
+        }
+      }
+    }
+  }
+}

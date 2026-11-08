@@ -1,181 +1,199 @@
-# Telco Customer Churn Prediction System
+# Telco Customer Churn Prediction
 
-A .NET Web API for managing Telco customer data, producing churn predictions through an external machine-learning service, and organizing customer-retention campaigns.
+A GitHub-ready monorepo for customer churn data exploration, reproducible model training, HTTP inference, customer management, and retention campaigns.
 
-## Features
-
-- Customer records and customer data management
-- Bulk customer import from Telco churn CSV files
-- Churn prediction through an external ML prediction service
-- Retention campaigns and campaign membership/outcome tracking
-- Dashboard summary analytics
-- ASP.NET Core Identity registration, login, and authenticated API access
-
-## Architecture and Tech Stack
-
-The backend follows a Clean Architecture-style separation:
-
-- **`Churn.Domain`** — business entities, enums, and shared domain types
-- **`Churn.Application`** — application services, DTOs, validators, and repository/service interfaces
-- **`Churn.Infrastructure`** — EF Core persistence, SQL Server repositories, Identity storage, Redis cache, and the HTTP ML-service client
-- **`Churn.API`** — ASP.NET Core controllers, middleware, authentication setup, Swagger, and HTTP endpoints
-
-**Technology:** .NET 9.0, ASP.NET Core Web API, Entity Framework Core 9 with SQL Server, SQL Server 2022, Redis 7, `HybridCache`, and an external ML Prediction Service.
-
-The API container does not include the ML service. Predictions require that service to be running and reachable at the configured `MLService:BaseUrl`.
-
-## Repository Structure
+## Architecture
 
 ```text
-.
-├── BackEnd/
-│   ├── Churn.API/                 # Web API, controllers, configuration
-│   ├── Churn.Application/         # Use cases, DTOs, interfaces, validators
-│   ├── Churn.Domain/              # Domain entities and enums
-│   ├── Churn.Infrastructure/      # EF Core, SQL Server, Redis, ML client
-│   ├── ChurnPredictionSystem.sln
-│   ├── Directory.Build.props      # Shared .NET target: net9.0
-│   └── Dockerfile
-├── DB/
-│   ├── ChurnPredictionDB.bak      # SQL Server backup restored by Compose
-│   └── Churn_Customers_100.csv    # Sample customer data
-├── scripts/
-│   └── restore-db.sh              # Compose database initialization
-├── docker-compose.yml             # API, SQL Server, Redis, db-init
-├── .dockerignore
-├── .env.example                   # Local Docker environment template
-└── README.md
+Flutter UI (UI placeholder)
+          |
+          v
+ASP.NET Core 9 API (BackEnd/Churn.API)
+   |          |             |
+   v          v             v
+SQL Server   Redis     FastAPI ML Service
+                         |           |
+                         v           v
+                   Model artifacts  SHAP
 ```
 
-The local `.env` file is intentionally ignored by Git; create it from `.env.example`.
+- **Flutter UI:** `UI/` is reserved for the client; it currently contains only a placeholder.
+- **ASP.NET Core API:** Clean Architecture projects under `BackEnd/`; owns customer, prediction, campaign, authentication, and dashboard endpoints.
+- **FastAPI ML service:** `ML/app/`; loads the checked-in preprocessing contract and trained models and serves predictions and SHAP explanations.
+- **SQL Server 2022:** stores customers, predictions, campaigns, and campaign outcomes. Compose restores the included backup on first startup.
+- **Redis 7:** distributed cache used by the API.
 
-## Getting Started
+## Repository layout
 
-### Option A: Docker Compose (Recommended)
-
-This runs the API, SQL Server 2022, and Redis in containers. It works with Docker Desktop on Windows and Docker Engine on Linux. Fedora hosts using SELinux should keep the `:Z` bind-mount options in `docker-compose.yml`.
-
-#### Prerequisites
-
-- Docker Engine or Docker Desktop with Compose v2 (`docker compose`)
-- A strong SQL Server `sa` password. SQL Server requires a password meeting its complexity policy.
-
-#### 1. Configure the environment
-
-Linux/macOS:
-
-```bash
-cp .env.example .env
+```text
+BackEnd/
+  Churn.API/                  ASP.NET Core controllers and startup
+  Churn.Application/          use cases, DTOs, service contracts
+  Churn.Domain/               entities and enums
+  Churn.Infrastructure/       EF Core, SQL Server, Redis, ML HTTP client
+  ChurnPredictionSystem.sln
+  Dockerfile
+DB/
+  ChurnPredictionDB.bak
+  Churn_Customers_100.csv
+ML/
+  app/                        FastAPI schemas, predictor, routes
+  artifacts/                  tracked models, preprocessing, registry, reports
+  data/                       Telco churn source CSV
+  notebooks/                  EDA and logistic-regression reference notebooks
+  training/                   reproducible training/evaluation script
+  Dockerfile
+  requirements.txt
+scripts/
+  restore-db.sh
+docker-compose.yml
 ```
 
-Windows PowerShell:
+The model files in `ML/artifacts/` are intentionally tracked so a fresh clone can start inference without retraining. `ML/training/train_and_evaluate.py` can regenerate the model registry, reports, and split datasets.
 
-```powershell
-Copy-Item .env.example .env
-```
+## Model comparison
 
-Edit `.env` and set `MSSQL_SA_PASSWORD` to a strong local development password:
+The following values are from the held-out test set (1,409 rows). Thresholds were selected using training-only out-of-fold predictions with business costs `FN=5`, `FP=1`; the test set was not used for threshold selection.
 
-```dotenv
-MSSQL_SA_PASSWORD=Replace_With_A_Strong_Password
-```
+| Model | Default F1 | Default Recall | ROC-AUC | PR-AUC | Cost threshold | Tuned F1 | Tuned Recall | Tuned Precision |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| KNN | 0.5792 | 0.5668 | 0.8256 | 0.6045 | 0.1905 | 0.5774 | 0.9171 | 0.4214 |
+| Gaussian Naive Bayes | 0.6102 | 0.7513 | 0.8235 | 0.5931 | 0.0027 | 0.5726 | 0.9171 | 0.4163 |
+| Decision Tree | 0.6188 | 0.7941 | 0.8355 | 0.6357 | 0.3453 | 0.5877 | 0.8824 | 0.4406 |
+| Random Forest | 0.6331 | 0.7727 | **0.8471** | **0.6570** | 0.3734 | **0.6135** | 0.8636 | **0.4757** |
 
-Do not commit `.env`; it may contain credentials.
+Baselines at the default 0.50 threshold:
 
-#### 2. Build and start the services
+| Baseline | F1 | Recall | ROC-AUC | PR-AUC | Accuracy |
+|---|---:|---:|---:|---:|---:|
+| Dummy (most frequent) | 0.0000 | 0.0000 | 0.5000 | 0.2654 | 0.7346 |
+| Logistic Regression (balanced) | 0.6164 | 0.7861 | 0.8419 | 0.6341 | 0.7402 |
 
-```bash
-docker compose up -d --build
-```
+The current registry selects Random Forest based on training OOF business cost. Full default/tuned confusion counts and all metrics are in `ML/artifacts/evaluation_comparison.csv`; hyperparameters and thresholds are in `ML/artifacts/model_registry.json`.
 
-Compose starts SQL Server and Redis, then runs the one-shot `db-init` service after SQL Server is healthy. On the first run, `db-init` reads `DB/ChurnPredictionDB.bak`, uses `RESTORE FILELISTONLY` to find the backup's logical data and log file names, and restores the database. If `ChurnPredictionDB` already exists in the persistent SQL volume, the restore step skips it.
+## Run with Docker Compose
 
-Check service status and restore output:
+Requirements: Docker Engine and Compose v2.
 
-```bash
-docker compose ps --all
-docker compose logs db-init
-docker compose logs -f api
-```
+1. Configure a local SQL Server password:
 
-#### URLs and ports
+   ```bash
+   cp .env.example .env
+   ```
 
-| Service | Address |
+   Set `MSSQL_SA_PASSWORD` in `.env` to a strong development password. Do not commit `.env`.
+
+2. Build and start the full stack:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+   Compose starts SQL Server and Redis, restores `DB/ChurnPredictionDB.bak` through the one-shot `db-init` service, starts the ML service, then starts the API after its dependencies report healthy.
+
+3. Check services and logs:
+
+   ```bash
+   docker compose ps
+   docker compose logs -f ml-service api db-init
+   ```
+
+Service URLs:
+
+| Service | Host address |
 |---|---|
-| API | <http://localhost:8080> |
-| Swagger UI (Development environment) | <http://localhost:8080/swagger> |
-| Health check | <http://localhost:8080/health> |
-| SQL Server from host tools | `127.0.0.1,1433` |
-| Redis (Compose network only) | `redis:6379` |
+| ASP.NET Core API | `http://localhost:8080` |
+| API Swagger (Development) | `http://localhost:8080/swagger` |
+| API health | `http://localhost:8080/health` |
+| FastAPI ML service | `http://localhost:8000` |
+| ML health | `http://localhost:8000/health` |
+| ML model registry and evaluation | `http://localhost:8000/models` |
+| SQL Server | `127.0.0.1:1433` |
+| Redis | Compose network only, `redis:6379` |
 
-For DBeaver or another SQL client, connect to `127.0.0.1`, port `1433`, database `ChurnPredictionDB`, user `sa`, and the password from `.env`. Enable **Trust server certificate** (equivalent to `TrustServerCertificate=true`). The SQL port is bound to loopback and is not published on external interfaces.
+The API connects to the ML service at `http://ml-service:8000/` over the Compose network. Set `ML_SERVICE_BASE_URL` only when intentionally overriding that address. The SQL port is bound to loopback; the ML and API ports are published on the host.
 
-The default ML-service URL in Compose is `http://host.docker.internal:8000/`. Run the ML service on the host at port 8000, or set `ML_SERVICE_BASE_URL` in `.env` to a URL reachable from the API container. The ML service is not started by this Compose file.
+The SQL data volume persists across normal container replacement. Avoid `docker compose down -v` unless you intentionally want to delete that database volume. The API does not automatically apply EF Core migrations at startup; its database must match the checked-in schema/backup.
 
-#### Useful Docker commands
+## Train models locally
+
+Use Python with the versions in `ML/requirements.txt`:
 
 ```bash
-# Follow all service logs
-docker compose logs -f
-
-# Stop and remove containers and network (keep the SQL volume)
-docker compose down
-
-# Stop containers and delete the SQL volume to restore the backup on next start
-docker compose down -v
-
-# Rebuild and start the API after source changes
-docker compose up -d --build
+python -m pip install -r ML/requirements.txt
+python ML/training/train_and_evaluate.py
 ```
 
-`docker compose down -v` permanently deletes the Compose-managed SQL data volume. Use it only when you want a fresh database restored from the `.bak` file.
+The script loads `ML/data/WA_Fn-UseC_-Telco-Customer-Churn.csv`, creates the stratified train/test split, fits the scaler only on training rows, runs 5-fold stratified model searches, tunes thresholds on training OOF probabilities, and writes model/split artifacts under `ML/artifacts/`. It also verifies SHAP explanations for the selected model, Decision Tree, and Random Forest.
 
-### Option B: Local Windows Visual Studio / .NET CLI
+To run the ML service outside Docker:
 
-Run SQL Server and Redis locally or in separate containers. The API expects both dependencies: SQL Server for persistence and Redis for the distributed cache.
-
-#### 1. Restore the database backup
-
-Restore `DB/ChurnPredictionDB.bak` to a local SQL Server instance using SQL Server Management Studio's **Restore Database** workflow or `sqlcmd`. Ensure the restored database name is `ChurnPredictionDB`. The Compose restore script is intended for its SQL Server container and is not a general Windows restore script.
-
-#### 2. Configure local settings
-
-Set the connection string, Redis connection, and ML-service URL using User Secrets (recommended) or `BackEnd/Churn.API/appsettings.json`. For example:
-
-```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=ChurnPredictionDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true" --project BackEnd/Churn.API
-dotnet user-secrets set "Redis:ConnectionString" "localhost:6379" --project BackEnd/Churn.API
-dotnet user-secrets set "MLService:BaseUrl" "http://localhost:8000/" --project BackEnd/Churn.API
+```bash
+cd ML
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-The checked-in `appsettings.json` uses `Server=.` and Windows trusted authentication by default. Change the connection string for your local SQL Server authentication mode and instance. If SQL Server is in a container, use its host-published address and SQL authentication instead. Start Redis locally or provide a reachable Redis endpoint. Start the ML service separately for prediction requests.
+## API endpoints
 
-#### 3. Run the API
+Most ASP.NET application endpoints require a bearer token. The Identity endpoints are mapped by ASP.NET Core Identity (`POST /register`, `POST /login`); Swagger supports bearer authentication.
 
-From the repository root:
-
-```powershell
-dotnet restore BackEnd/ChurnPredictionSystem.sln
-dotnet run --project BackEnd/Churn.API
-```
-
-Set `ASPNETCORE_ENVIRONMENT=Development` when needed to enable Swagger. The provided launch profiles define local HTTP/HTTPS development URLs; HTTPS redirection is enabled by the API.
-
-The project does not automatically apply EF Core migrations at startup. The database must already be restored or otherwise provisioned with the required schema.
-
-## Main API Endpoints
-
-Most application endpoints require authentication. The Identity API endpoints are mapped by ASP.NET Core Identity; register and log in at `/register` and `/login`. Swagger supports bearer-token authorization.
-
-| Area | Routes | Description |
+| Service | Method and route | Description |
 |---|---|---|
-| Auth | `POST /register`, `POST /login`, `GET /api/auth/me` | Register, obtain an Identity token, and retrieve the authenticated user's identity |
-| Customers | `GET/POST /api/customers`, `GET/PUT/DELETE /api/customers/{id}` | List, create, retrieve, update, and delete customers |
-| Imports | `POST /api/imports/customers/csv` | Import customer rows as multipart form data using the `file` field; maximum request size is 50 MB |
-| Predictions | `GET /api/predictions`, `GET /api/predictions/{id}`, `POST /api/predictions/{customerId}` | List or retrieve predictions, or request a prediction for a customer through the ML service |
-| Campaigns | `GET/POST /api/campaigns`, `GET/PUT/DELETE /api/campaigns/{id}` | Manage retention campaigns |
-| Campaign customers | `GET /api/campaigns/{id}/customers`, `POST /api/campaigns/{id}/customers`, `PUT /api/campaigns/{id}/customers/{memberId}` | View and manage campaign members and outcomes |
-| Dashboard | `GET /api/dashboard/summary` | Retrieve dashboard summary analytics |
-| Health | `GET /health` | Anonymous application health response |
+| API | `GET /health` | API health |
+| API | `GET/POST /api/customers`, `GET/PUT/DELETE /api/customers/{id}` | Customer management |
+| API | `POST /api/imports/customers/csv` | Import CSV using multipart field `file` |
+| API | `GET /api/predictions`, `GET /api/predictions/{id}` | Read saved predictions |
+| API | `POST /api/predictions/{customerId}` | Predict and persist one customer's result |
+| API | `GET/POST /api/campaigns`, `GET/PUT/DELETE /api/campaigns/{id}` | Campaign management |
+| API | `/api/campaigns/{id}/customers` | Campaign audience and outcomes |
+| API | `GET /api/dashboard/summary` | Dashboard summary |
+| ML | `GET /health` | Active model, version, selected threshold |
+| ML | `GET /models` | Full registry and evaluation rows |
+| ML | `POST /predict?model_name=Random%20Forest` | Predict one raw customer row |
+| ML | `POST /predict/batch?model_name=Random%20Forest` | Score a JSON array of customer rows |
 
-Controller routes and request models are the source of truth; use Swagger for the full schemas and response details.
+`model_name` is optional and defaults to the registry's best model. Supported names are the registry keys: `Dummy (most frequent)`, `Logistic Regression`, `KNN`, `Naive Bayes`, `Decision Tree`, and `Random Forest`.
+
+The single-row ML request is a flat JSON object matching the 19 customer feature fields sent by `MLService.cs`. Example:
+
+```json
+{
+  "gender": "Female",
+  "SeniorCitizen": 0,
+  "Partner": "Yes",
+  "Dependents": "No",
+  "tenure": 12,
+  "PhoneService": "Yes",
+  "MultipleLines": "No",
+  "InternetService": "Fiber optic",
+  "OnlineSecurity": "No",
+  "OnlineBackup": "Yes",
+  "DeviceProtection": "No",
+  "TechSupport": "No",
+  "StreamingTV": "Yes",
+  "StreamingMovies": "No",
+  "Contract": "Month-to-month",
+  "PaperlessBilling": "Yes",
+  "PaymentMethod": "Electronic check",
+  "MonthlyCharges": 75.5,
+  "TotalCharges": 906.0
+}
+```
+
+Prediction response:
+
+```json
+{
+  "churnProbability": 0.6821,
+  "riskLevel": "Medium",
+  "modelVersion": "1.0.0",
+  "topFactors": [
+    {
+      "feature": "Contract_Two year",
+      "impact": "negative (-0.159327)"
+    }
+  ]
+}
+```
+
+`impact` is a string to match the ASP.NET `MLFactor.Impact` contract; it contains the SHAP direction and signed contribution. Probabilities are rounded to four decimal places. Risk bands match the API: High at `>=0.7`, Medium at `>=0.4`, otherwise Low. Batch requests accept a JSON array of the same flat customer objects and return `{"predictions": [...]}`.

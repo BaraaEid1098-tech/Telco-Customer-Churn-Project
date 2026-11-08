@@ -31,6 +31,7 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong development password}
     volumes:
       - ./scripts/restore-db.sh:/scripts/restore-db.sh:ro,Z
+      - ./DB/ChurnPredictionDB.bak:/backup/ChurnPredictionDB.bak:ro,Z
     entrypoint: ["/bin/bash", "/scripts/restore-db.sh"]
     restart: "no"
 
@@ -43,6 +44,28 @@ services:
       retries: 10
     restart: unless-stopped
 
+  ml-service:
+    build:
+      context: ./ML
+      dockerfile: Dockerfile
+    container_name: churn-ml-service
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -52,14 +75,14 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
+      ml-service:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ChurnPredictionDB;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong development password};TrustServerCertificate=True;MultipleActiveResultSets=true"
       Redis__ConnectionString: redis:6379
-      MLService__BaseUrl: ${ML_SERVICE_BASE_URL:-http://host.docker.internal:8000/}
-    extra_hosts:
-      - host.docker.internal:host-gateway
+      MLService__BaseUrl: ${ML_SERVICE_BASE_URL:-http://ml-service:8000/}
     ports:
       - "8080:8080"
     restart: unless-stopped

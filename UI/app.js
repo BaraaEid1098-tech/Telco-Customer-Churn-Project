@@ -15,31 +15,6 @@ const NAV = [
 	['settings', 'Model & settings', '⚙']
 ];
 
-const DEMO_CUSTOMERS = [
-	{ id: 1, customerCode: 'Demo 001', gender: 'Female', seniorCitizen: false, partner: true, dependents: false, tenure: 3, phoneService: true, multipleLines: 'Yes', internetService: 'Fiber optic', onlineSecurity: 'No', onlineBackup: 'No', deviceProtection: 'No', techSupport: 'No', streamingTV: 'Yes', streamingMovies: 'Yes', contract: 'Month-to-month', paperlessBilling: true, paymentMethod: 'Electronic check', monthlyCharges: 92.4, totalCharges: 277.2 },
-	{ id: 2, customerCode: 'Demo 002', gender: 'Male', seniorCitizen: false, partner: false, dependents: false, tenure: 7, phoneService: true, multipleLines: 'Yes', internetService: 'Fiber optic', onlineSecurity: 'No', onlineBackup: 'Yes', deviceProtection: 'No', techSupport: 'No', streamingTV: 'Yes', streamingMovies: 'Yes', contract: 'Month-to-month', paperlessBilling: true, paymentMethod: 'Electronic check', monthlyCharges: 86.2, totalCharges: 603.4 },
-	{ id: 3, customerCode: 'Demo 003', gender: 'Female', seniorCitizen: false, partner: false, dependents: false, tenure: 4, phoneService: true, multipleLines: 'No', internetService: 'Fiber optic', onlineSecurity: 'No', onlineBackup: 'No', deviceProtection: 'No', techSupport: 'No', streamingTV: 'No', streamingMovies: 'No', contract: 'Month-to-month', paperlessBilling: false, paymentMethod: 'Mailed check', monthlyCharges: 79.9, totalCharges: 319.6 },
-	{ id: 4, customerCode: 'Demo 004', gender: 'Male', seniorCitizen: false, partner: true, dependents: true, tenure: 12, phoneService: true, multipleLines: 'Yes', internetService: 'DSL', onlineSecurity: 'Yes', onlineBackup: 'Yes', deviceProtection: 'No', techSupport: 'Yes', streamingTV: 'No', streamingMovies: 'No', contract: 'One year', paperlessBilling: true, paymentMethod: 'Credit card (automatic)', monthlyCharges: 74.5, totalCharges: 894 },
-	{ id: 5, customerCode: 'Demo 005', gender: 'Female', seniorCitizen: false, partner: false, dependents: false, tenure: 22, phoneService: true, multipleLines: 'No', internetService: 'DSL', onlineSecurity: 'No', onlineBackup: 'Yes', deviceProtection: 'No', techSupport: 'No', streamingTV: 'No', streamingMovies: 'No', contract: 'Month-to-month', paperlessBilling: true, paymentMethod: 'Electronic check', monthlyCharges: 69.1, totalCharges: 1520.2 },
-	{ id: 6, customerCode: 'Demo 006', gender: 'Male', seniorCitizen: false, partner: true, dependents: true, tenure: 49, phoneService: true, multipleLines: 'Yes', internetService: 'DSL', onlineSecurity: 'Yes', onlineBackup: 'Yes', deviceProtection: 'Yes', techSupport: 'Yes', streamingTV: 'No', streamingMovies: 'No', contract: 'Two year', paperlessBilling: false, paymentMethod: 'Bank transfer (automatic)', monthlyCharges: 45.2, totalCharges: 2214.8 },
-	{ id: 7, customerCode: 'Demo 007', gender: 'Female', seniorCitizen: false, partner: true, dependents: true, tenure: 58, phoneService: true, multipleLines: 'No', internetService: 'No', onlineSecurity: 'No', onlineBackup: 'No', deviceProtection: 'No', techSupport: 'No', streamingTV: 'No', streamingMovies: 'No', contract: 'Two year', paperlessBilling: true, paymentMethod: 'Credit card (automatic)', monthlyCharges: 49.8, totalCharges: 2888.4 }
-];
-
-const DEMO_PREDICTIONS = [
-	{ id: -1, customerId: 1, churnProbability: 0.91, riskLevel: 'High', modelVersion: 'demo', topFactors: [] },
-	{ id: -2, customerId: 2, churnProbability: 0.84, riskLevel: 'High', modelVersion: 'demo', topFactors: [] },
-	{ id: -3, customerId: 3, churnProbability: 0.81, riskLevel: 'High', modelVersion: 'demo', topFactors: [] },
-	{ id: -4, customerId: 4, churnProbability: 0.64, riskLevel: 'Medium', modelVersion: 'demo', topFactors: [] },
-	{ id: -5, customerId: 5, churnProbability: 0.53, riskLevel: 'Medium', modelVersion: 'demo', topFactors: [] },
-	{ id: -6, customerId: 6, churnProbability: 0.12, riskLevel: 'Low', modelVersion: 'demo', topFactors: [] },
-	{ id: -7, customerId: 7, churnProbability: 0.09, riskLevel: 'Low', modelVersion: 'demo', topFactors: [] }
-];
-
-const DEMO_CAMPAIGNS = [
-	{ id: -1, name: 'Plan renewal outreach', description: 'Sample campaign', campaignType: 'Retention', startDate: '2026-01-01', endDate: '2026-12-31', budget: null, status: 'Draft' },
-	{ id: -2, name: 'High charge check-in', description: 'Sample campaign', campaignType: 'Customer care', startDate: '2026-01-01', endDate: '2026-12-31', budget: null, status: 'Active' }
-];
-
 const ROUTES = {
 	overview: '/app/overview', customers: '/app/customers', customer: '/app/customers/selected',
 	explain: '/app/customers/selected/explain', import: '/app/import', campaigns: '/app/campaigns',
@@ -56,7 +31,6 @@ const state = {
 	apiBaseUrl: persisted.apiBaseUrl || DEFAULT_API_URL,
 	token: sessionStorage.getItem('retenscope-access-token') || '',
 	user: null,
-	demoMode: !sessionStorage.getItem('retenscope-access-token'),
 	apiStatus: 'unknown',
 	mlStatus: 'unknown',
 	dashboard: null,
@@ -128,10 +102,6 @@ function notify(message, error = false) {
 	element.classList.add('show');
 	clearTimeout(notify.timer);
 	notify.timer = setTimeout(() => element.classList.remove('show'), 4200);
-}
-
-function riskLabel(probability) {
-	return probability >= 0.7 ? 'High' : probability >= 0.4 ? 'Medium' : 'Low';
 }
 
 function riskBadge(label) {
@@ -213,75 +183,74 @@ function pageTitle() {
 
 function pageMeta() {
 	const [title, subtitle] = pageTitle();
-	return `<header class="topbar"><div class="mobile-top"><button aria-label="Toggle navigation" data-action="menu">☰</button></div><div style="flex:1"><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="top-actions"><span class="tag ${state.demoMode ? 'medium' : 'low'}">${state.demoMode ? 'DEMO MODE' : esc(state.user?.email || 'LIVE API')}</span><button class="button small" data-action="signout">Sign out</button></div></header>`;
+	return `<header class="topbar"><div class="mobile-top"><button aria-label="Toggle navigation" data-action="menu">☰</button></div><div style="flex:1"><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="top-actions"><span class="tag low">${esc(state.user?.email || 'LIVE API')}</span><button class="button small" data-action="signout">Sign out</button></div></header>`;
 }
 
 function layout(content) {
-	const fallbackBanner = state.demoMode
-		? warning('Demo mode is active. Values and records are illustrative; connect to the API from Settings or sign in to use live data.')
-		: state.lastError ? warning(`Live request failed: ${esc(state.lastError)}. Read-only views may show demo data until the API is reachable.`) : '';
-	return `<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><img src="assets/RetenScope_Symbol_Inverse.svg" alt=""><div><div class="brand-name">RetenScope</div><div class="brand-sub">AI RETENTION</div></div></div><div class="nav-caption">WORKSPACE</div><nav class="nav">${NAV.map(item => navButton(...item)).join('')}</nav><div class="sidebar-bottom"><strong>${state.demoMode ? 'Demo workspace' : 'Connected workspace'}</strong><div class="small">${esc(state.user?.email || 'API data is used when signed in')}</div></div></aside><main class="main">${pageMeta()}<div class="content">${fallbackBanner}${content}<footer class="footer-note">RetenScope · Churn prediction and retention research prototype</footer></div></main></div>`;
+	const errorBanner = state.lastError ? warning(`Live API data could not be loaded: ${esc(state.lastError)}`) : '';
+	return `<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><img src="assets/RetenScope_Symbol_Inverse.svg" alt=""><div><div class="brand-name">RetenScope</div><div class="brand-sub">AI RETENTION</div></div></div><div class="nav-caption">WORKSPACE</div><nav class="nav">${NAV.map(item => navButton(...item)).join('')}</nav><div class="sidebar-bottom"><strong>Connected workspace</strong><div class="small">${esc(state.user?.email || '')}</div></div></aside><main class="main">${pageMeta()}<div class="content">${errorBanner}${content}<footer class="footer-note">RetenScope · Churn prediction and retention research prototype</footer></div></main></div>`;
 }
 
 function loginPage() {
-	return `<div class="auth-wrap"><div class="auth-aside"><img src="assets/RetenScope_Logo_Inverse.svg" alt="RetenScope"><div><div class="eyebrow">Explainable retention intelligence</div><h1>See the risk.<br>Understand why.<br>Act with confidence.</h1><p>A customer churn research prototype connected to ASP.NET Core and the ML inference service.</p></div><div class="footnote">PREDICT → EXPLAIN → ACT</div></div><div class="auth-main"><div class="auth-panel"><div class="eyebrow">RetenScope / Workspace</div><h2 id="auth-title">Sign in</h2><p class="muted">Use an analyst account or continue in demo mode.</p><form id="auth-form"><div class="form-group"><label for="auth-email">Email</label><input id="auth-email" name="email" class="input" type="email" autocomplete="username" required></div><div class="form-group"><label for="auth-password">Password</label><input id="auth-password" name="password" class="input" type="password" autocomplete="current-password" minlength="8" required></div><div class="inline-actions"><button class="button primary" type="submit" data-auth-mode="login">Sign in</button><button class="button" type="submit" data-auth-mode="register">Create analyst account</button></div></form><button class="button full" style="margin-top:12px" data-action="demo">Enter demo workspace</button><label class="form-group" style="margin-top:20px">ASP.NET Core API URL<input id="login-api-url" class="input" value="${esc(state.apiBaseUrl)}"></label><p class="hint">Bearer tokens are held in this browser session. Do not use shared or public devices for real accounts.</p></div></div></div>`;
+	return `<div class="auth-wrap"><div class="auth-aside"><img src="assets/RetenScope_Logo_Inverse.svg" alt="RetenScope"><div><div class="eyebrow">Explainable retention intelligence</div><h1>See the risk.<br>Understand why.<br>Act with confidence.</h1><p>A customer churn research prototype connected to ASP.NET Core and the ML inference service.</p></div><div class="footnote">PREDICT → EXPLAIN → ACT</div></div><div class="auth-main"><div class="auth-panel"><div class="eyebrow">RetenScope / Workspace</div><h2 id="auth-title">Sign in</h2><p class="muted">Sign in or create an analyst account to load live workspace data.</p>${state.lastError ? warning(`API connection or authentication error: ${esc(state.lastError)}`) : ''}<form id="auth-form"><div class="form-group"><label for="auth-email">Email</label><input id="auth-email" name="email" class="input" type="email" autocomplete="username" required></div><div class="form-group"><label for="auth-password">Password</label><input id="auth-password" name="password" class="input" type="password" autocomplete="current-password" minlength="8" required></div><div class="inline-actions"><button class="button primary" type="submit" data-auth-mode="login">Sign in</button><button class="button" type="submit" data-auth-mode="register">Create analyst account</button></div></form><label class="form-group" style="margin-top:20px">ASP.NET Core API URL<input id="login-api-url" class="input" value="${esc(state.apiBaseUrl)}"></label><p class="hint">Bearer tokens are held in this browser session. Do not use shared or public devices for analyst credentials.</p></div></div></div>`;
 }
 
 function overviewPage() {
 	const data = state.dashboard;
-	const customers = state.customers.length;
-	const churned = Number(value(data, 'knownChurnedCustomers') || 0);
-	const churnRate = Number(value(data, 'churnRatePercent') || 0);
-	const kpis = data && !state.demoMode
-		? `<div class="grid cols-4">${kpi('CUSTOMERS', value(data, 'totalCustomers'), 'SQL Server')}${kpi('KNOWN CHURNED', churned.toLocaleString(), `${churnRate.toFixed(1)}% of known records`, 'burgundy')}${kpi('HIGH RISK', value(data, 'highRiskCustomers'), 'Saved model predictions', 'green')}${kpi('PREDICTIONS', value(data, 'totalPredictions'), `Active campaigns: ${value(data, 'activeCampaigns')}`)}</div><section class="card section">${sectionTitle('Billing profile', 'Average monthly charges in the customer database')}${kpi('AVERAGE MONTHLY CHARGES', `$${Number(value(data, 'averageMonthlyCharges') || 0).toFixed(2)}`, 'USD')}</section>`
-		: `<div class="grid cols-4">${kpi('CUSTOMERS', '7,043', 'Illustrative sample')}${kpi('OBSERVED CHURN', '26.5%', 'Reference dataset', 'burgundy')}${kpi('SAVED SCORES', String(state.predictions.length || 7), 'Demo predictions', 'green')}${kpi('ACTIVE CAMPAIGNS', String(state.campaigns.length || 2), 'Demo records')}</div>${warning(`Live customer records loaded: ${customers}. Connect through Settings to replace these sample KPIs.`, 'teal')}`;
-	return `${kpis}<div class="grid cols-2 section"><section class="card">${sectionTitle('Service health', 'Current browser-to-service checks')}<div class="list"><div class="mini-item"><span>ASP.NET Core API</span><span class="tag ${state.apiStatus === 'healthy' ? 'low' : 'high'}">${esc(state.apiStatus.toUpperCase())}</span></div><div class="mini-item"><span>FastAPI ML</span><span class="tag ${state.mlStatus === 'healthy' ? 'low' : 'high'}">${esc(state.mlStatus.toUpperCase())}</span></div></div><button class="button small" style="margin-top:14px" data-action="refresh-health">Refresh status</button></section><section class="card">${sectionTitle('Next step', 'Customer scores come from the live model')}<p>Open a customer record and run a prediction to save the model score and SHAP feature contributions.</p><button class="button primary" style="margin-top:14px" data-page="customers">Browse customers</button></section></div>`;
+	if (!data) return warning('Dashboard data is not available from the API.');
+	const churned = Number(value(data, 'knownChurnedCustomers'));
+	const churnRate = Number(value(data, 'churnRatePercent'));
+	const registry = state.modelData?.registry;
+	const activeModel = registry?.threshold_selection?.best_model_by_training_oof_cost;
+	const threshold = registry?.models?.[activeModel]?.chosen_threshold;
+	const kpis = `<div class="grid cols-4">${kpi('CUSTOMERS', value(data, 'totalCustomers'), 'SQL Server')}${kpi('KNOWN CHURNED', churned.toLocaleString(), `${churnRate.toFixed(1)}% of known records`, 'burgundy')}${kpi('HIGH RISK', value(data, 'highRiskCustomers'), 'Saved model predictions', 'green')}${kpi('PREDICTIONS', value(data, 'totalPredictions'), `Active campaigns: ${value(data, 'activeCampaigns')}`)}</div><section class="card section">${sectionTitle('Billing profile', 'Average monthly charges in the customer database')}${kpi('AVERAGE MONTHLY CHARGES', `$${Number(value(data, 'averageMonthlyCharges')).toFixed(2)}`, 'USD')}</section>`;
+	const modelSummary = activeModel && threshold !== undefined
+		? `<p>Active model: <strong>${esc(activeModel)}</strong> · threshold ${esc(Number(threshold).toFixed(4))}</p>`
+		: '<p>Active model information is not available from the ML service.</p>';
+	return `${kpis}<div class="grid cols-2 section"><section class="card">${sectionTitle('Service health', 'Current API and ML service checks')}<div class="list"><div class="mini-item"><span>ASP.NET Core API</span><span class="tag ${state.apiStatus === 'healthy' ? 'low' : 'high'}">${esc(state.apiStatus.toUpperCase())}</span></div><div class="mini-item"><span>FastAPI ML</span><span class="tag ${state.mlStatus === 'healthy' ? 'low' : 'high'}">${esc(state.mlStatus.toUpperCase())}</span></div></div><button class="button small" style="margin-top:14px" data-action="refresh-health">Refresh status</button></section><section class="card">${sectionTitle('Model status', 'Registry values reported by the ML service')}${modelSummary}<button class="button primary" style="margin-top:14px" data-page="customers">Browse customers</button></section></div>`;
 }
 
 function customerRows() {
-	const customers = state.demoMode ? DEMO_CUSTOMERS : state.customers;
-	const predictions = state.demoMode ? DEMO_PREDICTIONS : state.predictions;
 	const search = state.query.trim().toLowerCase();
-	const rows = customers.filter(customer => {
+	const rows = state.customers.filter(customer => {
 		const text = `${customerName(customer)} ${value(customer, 'gender')} ${value(customer, 'contract')}`.toLowerCase();
 		if (search && !text.includes(search)) return false;
-		const score = latestPrediction(value(customer, 'id')) || predictions.find(item => Number(value(item, 'customerId')) === Number(value(customer, 'id')));
+		const score = latestPrediction(value(customer, 'id'));
 		return state.riskFilter === 'All' || (score && value(score, 'riskLevel') === state.riskFilter);
 	}).map(customer => {
-		const prediction = predictions.find(item => Number(value(item, 'customerId')) === Number(value(customer, 'id')));
+		const prediction = latestPrediction(value(customer, 'id'));
 		const score = prediction ? probability(prediction) : null;
-		return `<tr><td><button class="link-like" data-customer="${esc(value(customer, 'id'))}">${esc(customerName(customer))}</button></td><td>${esc(value(customer, 'contract'))}</td><td>${esc(value(customer, 'tenure'))}</td><td>${score === null ? 'Not scored' : `${(score * 100).toFixed(2)}%`}</td><td>${prediction ? riskBadge(value(prediction, 'riskLevel')) : '<span class="tag">No score</span>'}</td><td>${prediction ? esc(value(prediction, 'modelVersion')) : '—'}</td></tr>`;
+		return `<tr><td><button class="link-like" data-customer="${esc(value(customer, 'id'))}">${esc(customerName(customer))}</button></td><td>${esc(value(customer, 'contract'))}</td><td>${esc(value(customer, 'tenure'))}</td><td>${score === null ? 'Not scored yet' : `${(score * 100).toFixed(2)}%`}</td><td>${prediction ? riskBadge(value(prediction, 'riskLevel')) : '<span class="tag">Not scored</span>'}</td><td>${prediction ? esc(value(prediction, 'modelVersion')) : '—'}</td></tr>`;
 	});
 	return dataTable(['Customer', 'Contract', 'Tenure', 'Churn probability', 'Risk', 'Model'], rows, 'No matching customers.');
 }
 
 function customersPage() {
-	return `<section class="card">${sectionTitle('Customer records', state.demoMode ? 'Illustrative data' : `${state.customers.length} records loaded`)}<div class="toolbar"><input id="customer-search" class="input search" placeholder="Search customer, contract, or gender" value="${esc(state.query)}"><select id="risk-filter" class="input" style="max-width:180px"><option>All</option><option>High</option><option>Medium</option><option>Low</option></select><button class="button small" data-action="refresh-customers">Refresh</button></div>${customerRows()}</section>`;
+	return `<section class="card">${sectionTitle('Customer records', `${state.customers.length} records loaded`)}<div class="toolbar"><input id="customer-search" class="input search" placeholder="Search customer, contract, or gender" value="${esc(state.query)}"><select id="risk-filter" class="input" style="max-width:180px"><option>All</option><option>High</option><option>Medium</option><option>Low</option></select><button class="button small" data-action="refresh-customers">Refresh</button></div>${customerRows()}</section>`;
 }
 
 function customerPage() {
 	const customer = currentCustomer();
 	if (!customer) return `${warning('Select a customer from the customer list first.')}<button class="button" data-page="customers">Customers</button>`;
-	const prediction = (state.demoMode ? DEMO_PREDICTIONS : state.predictions).find(item => Number(value(item, 'customerId')) === Number(state.customerId));
+	const prediction = latestPrediction(state.customerId);
 	const score = prediction ? probability(prediction) : null;
-	return `<section class="card">${sectionTitle(customerName(customer), 'Customer attributes from the API or demo data', `<button class="button primary" data-action="predict" ${state.demoMode ? 'disabled title="Sign in to run a live prediction"' : ''}>Run Live ML Prediction</button>`)}<div class="grid cols-4">${kpi('TENURE', `${value(customer, 'tenure')} months`, value(customer, 'contract'))}${kpi('MONTHLY CHARGES', `$${Number(value(customer, 'monthlyCharges') || 0).toFixed(2)}`, value(customer, 'paymentMethod'))}${kpi('CHURN PROBABILITY', score === null ? '—' : `${(score * 100).toFixed(2)}%`, prediction ? `Model ${value(prediction, 'modelVersion')}` : 'Run a live prediction', 'burgundy')}${kpi('RISK', prediction ? value(prediction, 'riskLevel') : 'Not scored', prediction ? 'Saved prediction' : 'No prediction yet')}</div></section><section class="card section">${sectionTitle('Latest SHAP explanation', prediction ? `Prediction #${value(prediction, 'id')} · model ${value(prediction, 'modelVersion')}` : 'Run a live prediction to explain this score')}${prediction ? renderFactors(value(prediction, 'topFactors')) : warning('No prediction has been saved for this customer.', 'teal')}<button class="button small" style="margin-top:14px" data-page="explain">Open explainability view</button></section>`;
+	return `<section class="card">${sectionTitle(customerName(customer), 'Customer attributes loaded from the API', '<button class="button primary" data-action="predict">Run Live ML Prediction</button>')}<div class="grid cols-4">${kpi('TENURE', `${value(customer, 'tenure')} months`, value(customer, 'contract'))}${kpi('MONTHLY CHARGES', `$${Number(value(customer, 'monthlyCharges')).toFixed(2)}`, value(customer, 'paymentMethod'))}${kpi('CHURN PROBABILITY', score === null ? '—' : `${(score * 100).toFixed(2)}%`, prediction ? `Model ${value(prediction, 'modelVersion')}` : 'Not scored yet', 'burgundy')}${kpi('RISK', prediction ? value(prediction, 'riskLevel') : 'Not scored', prediction ? 'Saved prediction' : 'Not scored yet')}</div>${prediction ? '' : warning('Not scored yet — click Run Live ML Prediction.', 'teal')}</section><section class="card section">${sectionTitle('Latest SHAP explanation', prediction ? `Prediction #${value(prediction, 'id')} · model ${value(prediction, 'modelVersion')}` : 'No live explanation is available')}${prediction ? renderFactors(value(prediction, 'topFactors')) : warning('SHAP factors will appear after a live prediction.', 'teal')}<button class="button small" style="margin-top:14px" data-page="explain">Open explainability view</button></section>`;
 }
 
 function explainPage() {
 	const customer = currentCustomer();
-	const prediction = customer && (state.demoMode ? DEMO_PREDICTIONS : state.predictions).find(item => Number(value(item, 'customerId')) === Number(state.customerId));
+	const prediction = customer && latestPrediction(state.customerId);
 	if (!customer) return customerPage();
-	if (!prediction) return `${warning('There is no saved prediction to explain.')}<button class="button primary" data-action="predict">Run Live ML Prediction</button>`;
-	return `<section class="card">${sectionTitle(`Explanation · ${customerName(customer)}`, `Score ${(probability(prediction) * 100).toFixed(2)}% · ${value(prediction, 'riskLevel')} risk · ${value(prediction, 'modelVersion')}`)}${state.demoMode ? warning('Illustrative demo prediction; these are not real model explanations.') : ''}${renderFactors(value(prediction, 'topFactors'))}</section>`;
+	if (!prediction) return `${warning('Not scored yet — click Run Live ML Prediction to generate a live explanation.')}<button class="button primary" data-action="predict">Run Live ML Prediction</button>`;
+	return `<section class="card">${sectionTitle(`Explanation · ${customerName(customer)}`, `Score ${(probability(prediction) * 100).toFixed(2)}% · ${value(prediction, 'riskLevel')} risk · ${value(prediction, 'modelVersion')}`)}${renderFactors(value(prediction, 'topFactors'))}</section>`;
 }
 
 function importPage() {
-	return `<section class="card">${sectionTitle('Upload customer CSV', 'Accepted format: the Telco churn dataset header and fields')}<div class="dropzone" id="dropzone"><div><h2>Choose a CSV file to import</h2><p class="muted" style="margin:12px 0">The file is uploaded to the authenticated API.</p><label class="button primary" for="csv-file">Choose CSV</label><input id="csv-file" type="file" accept=".csv,text/csv" hidden></div></div><p class="hint">The API validates the 21-column Telco format and reports imported and skipped rows.</p>${state.importResult ? `<div class="grid cols-3 section">${kpi('IMPORTED', state.importResult.imported, 'Rows saved')}${kpi('SKIPPED', state.importResult.skipped, 'Rows rejected')}${kpi('ERROR DETAILS', state.importResult.errors?.length || 0, 'First 100 returned')}</div>${state.importResult.errors?.length ? warning(esc(state.importResult.errors.join(' · '))) : ''}` : ''}<button class="button primary section" data-action="upload-csv" ${state.demoMode ? 'disabled' : ''}>Upload selected CSV</button></section>`;
+	return `<section class="card">${sectionTitle('Upload customer CSV', 'Accepted format: the Telco churn dataset header and fields')}<div class="dropzone" id="dropzone"><div><h2>Choose a CSV file to import</h2><p class="muted" style="margin:12px 0">The file is uploaded to the authenticated API.</p><label class="button primary" for="csv-file">Choose CSV</label><input id="csv-file" type="file" accept=".csv,text/csv" hidden></div></div><p class="hint">The API validates the Telco format and reports imported and skipped rows.</p>${state.importResult ? `<div class="grid cols-3 section">${kpi('IMPORTED', state.importResult.imported, 'Rows saved')}${kpi('SKIPPED', state.importResult.skipped, 'Rows rejected')}${kpi('ERROR DETAILS', state.importResult.errors?.length ?? 0, 'Returned by API')}</div>${state.importResult.errors?.length ? warning(esc(state.importResult.errors.join(' · '))) : ''}` : ''}<button class="button primary section" data-action="upload-csv">Upload selected CSV</button></section>`;
 }
 
 function campaignRows() {
-	const disabled = state.demoMode ? 'disabled' : '';
-	const rows = state.campaigns.map(campaign => `<tr><td>${esc(value(campaign, 'name'))}</td><td>${esc(value(campaign, 'campaignType'))}</td><td>${esc(value(campaign, 'startDate'))}</td><td>${esc(value(campaign, 'endDate'))}</td><td>${esc(value(campaign, 'status'))}</td><td><button class="button small" data-audience="${esc(value(campaign, 'id'))}" ${disabled}>Audience</button> <button class="button small" data-campaign-status="${esc(value(campaign, 'id'))}" ${disabled}>Change status</button></td></tr>`);
+	const rows = state.campaigns.map(campaign => `<tr><td>${esc(value(campaign, 'name'))}</td><td>${esc(value(campaign, 'campaignType'))}</td><td>${esc(value(campaign, 'startDate'))}</td><td>${esc(value(campaign, 'endDate'))}</td><td>${esc(value(campaign, 'status'))}</td><td><button class="button small" data-audience="${esc(value(campaign, 'id'))}">Audience</button> <button class="button small" data-campaign-status="${esc(value(campaign, 'id'))}">Change status</button></td></tr>`);
 	return dataTable(['Campaign', 'Type', 'Start', 'End', 'Status', 'Actions'], rows);
 }
 
@@ -291,21 +260,26 @@ function campaignsPage() {
 		: '';
 	const customerOptions = state.customers.map(customer => `<option value="${esc(value(customer, 'id'))}">${esc(customerName(customer))}</option>`).join('');
 	const campaignOptions = state.campaigns.map(campaign => `<option value="${esc(value(campaign, 'id'))}">${esc(value(campaign, 'name'))}</option>`).join('');
-	return `<section class="card">${sectionTitle('Campaigns', `${state.campaigns.length} records`, '<button class="button primary" data-page="builder">Create campaign</button>')}<div class="toolbar"><button class="button small" data-action="refresh-campaigns">Refresh</button></div>${campaignRows()}</section><section class="card section">${sectionTitle('Enroll customer', 'Add a customer and optionally link their latest saved prediction')}<div class="form-grid"><div class="form-group"><label for="enroll-campaign">Campaign</label><select id="enroll-campaign">${campaignOptions}</select></div><div class="form-group"><label for="enroll-customer">Customer</label><select id="enroll-customer">${customerOptions}</select></div><div class="form-group full"><label for="offer-details">Offer details</label><input id="offer-details" class="input" maxlength="500"></div></div><button class="button primary section" data-action="enroll-customer" ${state.demoMode ? 'disabled' : ''}>Enroll customer</button></section>${audience}`;
+	const enrollment = state.campaigns.length && state.customers.length
+		? `<section class="card section">${sectionTitle('Enroll customer', 'Add a customer and optionally link their latest saved prediction')}<div class="form-grid"><div class="form-group"><label for="enroll-campaign">Campaign</label><select id="enroll-campaign">${campaignOptions}</select></div><div class="form-group"><label for="enroll-customer">Customer</label><select id="enroll-customer">${customerOptions}</select></div><div class="form-group full"><label for="offer-details">Offer details</label><input id="offer-details" class="input" maxlength="500"></div></div><button class="button primary section" data-action="enroll-customer">Enroll customer</button></section>`
+		: `<section class="card section">${sectionTitle('Enroll customer', 'Campaigns and customers are loaded from the API')}${warning('Enrollment is unavailable until both campaigns and customers exist.', 'teal')}</section>`;
+	return `<section class="card">${sectionTitle('Campaigns', `${state.campaigns.length} records`, '<button class="button primary" data-page="builder">Create campaign</button>')}<div class="toolbar"><button class="button small" data-action="refresh-campaigns">Refresh</button></div>${campaignRows()}${state.campaigns.length ? '' : warning('No campaigns created yet.', 'teal')}</section>${enrollment}${audience}`;
 }
 
 function builderPage() {
-	return `<section class="card">${sectionTitle('New campaign', 'Creates a SQL-backed campaign in Draft status')}<form id="campaign-form"><div class="form-grid"><div class="form-group full"><label for="campaign-name">Name</label><input id="campaign-name" name="name" class="input" maxlength="150" required></div><div class="form-group full"><label for="campaign-description">Description</label><textarea id="campaign-description" name="description" maxlength="1000"></textarea></div><div class="form-group"><label for="campaign-type">Campaign type</label><input id="campaign-type" name="campaignType" class="input" maxlength="50" value="Retention" required></div><div class="form-group"><label for="campaign-budget">Budget</label><input id="campaign-budget" name="budget" class="input" type="number" min="0" step="0.01"></div><div class="form-group"><label for="campaign-start">Start date</label><input id="campaign-start" name="startDate" class="input" type="date" required></div><div class="form-group"><label for="campaign-end">End date</label><input id="campaign-end" name="endDate" class="input" type="date" required></div></div><div class="inline-actions section"><button class="button primary" type="submit" ${state.demoMode ? 'disabled' : ''}>Save campaign</button><button class="button" type="button" data-page="campaigns">Cancel</button></div></form></section>`;
+	return `<section class="card">${sectionTitle('New campaign', 'Creates a campaign record through the API')}<form id="campaign-form"><div class="form-grid"><div class="form-group full"><label for="campaign-name">Name</label><input id="campaign-name" name="name" class="input" maxlength="150" required></div><div class="form-group full"><label for="campaign-description">Description</label><textarea id="campaign-description" name="description" maxlength="1000"></textarea></div><div class="form-group"><label for="campaign-type">Campaign type</label><input id="campaign-type" name="campaignType" class="input" maxlength="50" required></div><div class="form-group"><label for="campaign-budget">Budget</label><input id="campaign-budget" name="budget" class="input" type="number" min="0" step="0.01"></div><div class="form-group"><label for="campaign-start">Start date</label><input id="campaign-start" name="startDate" class="input" type="date" required></div><div class="form-group"><label for="campaign-end">End date</label><input id="campaign-end" name="endDate" class="input" type="date" required></div></div><div class="inline-actions section"><button class="button primary" type="submit">Save campaign</button><button class="button" type="button" data-page="campaigns">Cancel</button></div></form></section>`;
 }
 
 function outcomesPage() {
-	if (!state.campaigns.length) return `${warning('Create or load a campaign to manage its audience outcomes.')}<button class="button" data-page="campaigns">Campaigns</button>`;
+	if (!state.campaigns.length) return `<section class="card">${sectionTitle('Campaign outcomes', 'Outcome records are loaded from campaign membership data')}${warning('No campaigns created yet.', 'teal')}<button class="button" data-page="campaigns">Campaigns</button></section>`;
 	const campaignOptions = state.campaigns.map(campaign => `<option value="${esc(value(campaign, 'id'))}" ${Number(value(campaign, 'id')) === Number(state.audienceCampaignId) ? 'selected' : ''}>${esc(value(campaign, 'name'))}</option>`).join('');
-	return `<section class="card">${sectionTitle('Campaign outcomes', 'Select a campaign to load its enrolled customers')}<div class="toolbar"><select id="outcome-campaign" class="input" style="max-width:420px">${campaignOptions}</select><button class="button small" data-action="load-audience" ${state.demoMode ? 'disabled' : ''}>Load audience</button></div>${state.demoMode ? warning('Sign in to load campaign members and record live outcomes.') : ''}${state.audience.map(member => `<form class="card outcome-form" data-member-id="${esc(value(member, 'id'))}"><h3>Customer ${esc(value(member, 'customerId'))} · membership ${esc(value(member, 'id'))}</h3><div class="form-grid section"><label class="form-group">Contact status<select name="contactStatus"><option ${value(member, 'contactStatus') === 'Pending' ? 'selected' : ''}>Pending</option><option ${value(member, 'contactStatus') === 'Contacted' ? 'selected' : ''}>Contacted</option><option ${value(member, 'contactStatus') === 'Responded' ? 'selected' : ''}>Responded</option><option ${value(member, 'contactStatus') === 'Failed' ? 'selected' : ''}>Failed</option></select></label><label class="form-group">Campaign outcome<select name="campaignOutcome"><option ${value(member, 'campaignOutcome') === 'Unknown' ? 'selected' : ''}>Unknown</option><option ${value(member, 'campaignOutcome') === 'Retained' ? 'selected' : ''}>Retained</option><option ${value(member, 'campaignOutcome') === 'Churned' ? 'selected' : ''}>Churned</option><option ${value(member, 'campaignOutcome') === 'NotInterested' ? 'selected' : ''}>NotInterested</option></select></label><label class="form-group">Contact date<input name="contactDate" type="datetime-local" value="${esc(value(member, 'contactDate') ? new Date(value(member, 'contactDate')).toISOString().slice(0, 16) : '')}"></label><label class="form-group">Offer details<input name="offerDetails" value="${esc(value(member, 'offerDetails'))}" disabled></label><label class="form-group full">Notes<textarea name="notes" maxlength="500">${esc(value(member, 'notes'))}</textarea></label></div><button class="button primary section" type="submit">Save outcome</button></form>`).join('') || (state.audienceCampaignId !== null && !state.demoMode ? warning('No customers are enrolled in this campaign.', 'teal') : '')}</section>`;
+	return `<section class="card">${sectionTitle('Campaign outcomes', 'Select a campaign to load its enrolled customers')}<div class="toolbar"><select id="outcome-campaign" class="input" style="max-width:420px">${campaignOptions}</select><button class="button small" data-action="load-audience">Load audience</button></div>${state.audience.map(member => `<form class="card outcome-form" data-member-id="${esc(value(member, 'id'))}"><h3>Customer ${esc(value(member, 'customerId'))} · membership ${esc(value(member, 'id'))}</h3><div class="form-grid section"><label class="form-group">Contact status<select name="contactStatus"><option ${value(member, 'contactStatus') === 'Pending' ? 'selected' : ''}>Pending</option><option ${value(member, 'contactStatus') === 'Contacted' ? 'selected' : ''}>Contacted</option><option ${value(member, 'contactStatus') === 'Responded' ? 'selected' : ''}>Responded</option><option ${value(member, 'contactStatus') === 'Failed' ? 'selected' : ''}>Failed</option></select></label><label class="form-group">Campaign outcome<select name="campaignOutcome"><option ${value(member, 'campaignOutcome') === 'Unknown' ? 'selected' : ''}>Unknown</option><option ${value(member, 'campaignOutcome') === 'Retained' ? 'selected' : ''}>Retained</option><option ${value(member, 'campaignOutcome') === 'Churned' ? 'selected' : ''}>Churned</option><option ${value(member, 'campaignOutcome') === 'NotInterested' ? 'selected' : ''}>NotInterested</option></select></label><label class="form-group">Contact date<input name="contactDate" type="datetime-local" value="${esc(value(member, 'contactDate') ? new Date(value(member, 'contactDate')).toISOString().slice(0, 16) : '')}"></label><label class="form-group">Offer details<input name="offerDetails" value="${esc(value(member, 'offerDetails'))}" disabled></label><label class="form-group full">Notes<textarea name="notes" maxlength="500">${esc(value(member, 'notes'))}</textarea></label></div><button class="button primary section" type="submit">Save outcome</button></form>`).join('') || (state.audienceCampaignId !== null ? warning('No customers are enrolled in this campaign.', 'teal') : '')}</section>`;
 }
 
 function metricComparison() {
-	const entries = state.modelData?.evaluation_comparison || [];
+	const entries = Array.isArray(state.modelData?.evaluation_comparison)
+		? state.modelData.evaluation_comparison
+		: [];
 	const latest = new Map();
 	for (const entry of entries) {
 		const name = entry.model || entry.Model;
@@ -317,22 +291,37 @@ function metricComparison() {
 	const rows = [...latest.entries()].map(([name, policies]) => {
 		const defaultRow = policies.find(row => row.thresholdPolicy === 'default_0.50') || policies[0];
 		const tunedRow = policies.find(row => row.thresholdPolicy === 'cost_tuned') || defaultRow;
-		const num = (row, key) => Number(row[key] ?? row[key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())] ?? 0);
-		return `<tr><td>${esc(name)}</td><td>${num(tunedRow, 'recall').toFixed(3)}</td><td>${num(tunedRow, 'precision').toFixed(3)}</td><td>${num(tunedRow, 'f1_score').toFixed(3)}</td><td>${num(tunedRow, 'roc_auc').toFixed(3)}</td><td>${num(tunedRow, 'pr_auc').toFixed(3)}</td><td>${num(tunedRow, 'chosen_threshold').toFixed(4)}</td><td>${esc(value(tunedRow, 'thresholdPolicy') || '')}</td></tr>`;
+		const metric = (row, key, digits = 3) => {
+			const raw = row[key] ?? row[key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())];
+			const number = Number(raw);
+			return raw !== undefined && Number.isFinite(number) ? number.toFixed(digits) : '—';
+		};
+		return `<tr><td>${esc(name)}</td><td>${metric(tunedRow, 'recall')}</td><td>${metric(tunedRow, 'precision')}</td><td>${metric(tunedRow, 'f1_score')}</td><td>${metric(tunedRow, 'roc_auc')}</td><td>${metric(tunedRow, 'pr_auc')}</td><td>${metric(tunedRow, 'accuracy')}</td><td>${metric(tunedRow, 'chosen_threshold', 4)}</td><td>${metric(tunedRow, 'tp', 0)}</td><td>${metric(tunedRow, 'fp', 0)}</td><td>${metric(tunedRow, 'tn', 0)}</td><td>${metric(tunedRow, 'fn', 0)}</td><td>${esc(tunedRow.thresholdPolicy || '')}</td></tr>`;
 	});
-	return dataTable(['Model', 'Recall', 'Precision', 'F1', 'ROC-AUC', 'PR-AUC', 'Threshold', 'Policy'], rows, 'Model comparison is not available.');
+	return dataTable(['Model', 'Recall', 'Precision', 'F1', 'ROC-AUC', 'PR-AUC', 'Accuracy', 'Threshold', 'TP', 'FP', 'TN', 'FN', 'Policy'], rows, 'No model comparison data is available from the ML service.');
 }
 
 function reportsPage() {
 	const registry = state.modelData?.registry;
-	const active = registry?.threshold_selection?.best_model_by_training_oof_cost || 'Unavailable';
+	const active = registry?.threshold_selection?.best_model_by_training_oof_cost;
 	const model = registry?.models?.[active];
 	const threshold = model?.chosen_threshold;
-	return `<section class="card">${sectionTitle('Model registry', 'Evaluation metrics from the checked-in model artifacts')}${registry ? `<div class="grid cols-3">${kpi('ACTIVE MODEL', active, `Version ${registry.model_version}`)}${kpi('COST THRESHOLD', Number(threshold || 0).toFixed(4), 'Selected using training OOF predictions')}${kpi('COST RATIO', 'FN : FP = 5 : 1', 'Business-cost threshold policy')}</div>` : warning('Model registry is unavailable; check the ML service connection.')}</section><section class="card section">${sectionTitle('Evaluation comparison', 'Held-out test metrics; threshold policy selected without test data')}${metricComparison()}</section>`;
+	const falseNegativeCost = registry?.threshold_selection?.false_negative_cost;
+	const falsePositiveCost = registry?.threshold_selection?.false_positive_cost;
+	const costRatio = falseNegativeCost !== undefined && falsePositiveCost !== undefined
+		? `${falseNegativeCost} : ${falsePositiveCost}`
+		: null;
+	return `<section class="card">${sectionTitle('Model registry', 'Registry and evaluation data returned by the ML service')}${registry ? `<div class="grid cols-3">${kpi('ACTIVE MODEL', active || 'Unavailable', `Version ${registry.model_version ?? 'Unavailable'}`)}${kpi('COST THRESHOLD', threshold === undefined ? 'Unavailable' : Number(threshold).toFixed(4), registry.threshold_selection?.method || 'Threshold selection policy unavailable')}${kpi('FALSE-NEGATIVE : FALSE-POSITIVE COST', costRatio || 'Unavailable', registry.threshold_selection?.method || 'Cost policy unavailable')}</div>` : warning('Model registry is unavailable; check the API and ML service connection.')}</section><section class="card section">${sectionTitle('Evaluation comparison', 'Metrics and thresholds returned by the ML service')}${metricComparison()}</section>`;
 }
 
 function settingsPage() {
-	return `<section class="card">${sectionTitle('Service addresses', 'The API securely proxies ML health and registry requests')}<form id="settings-form"><label class="form-group">ASP.NET Core API base URL<input name="apiBaseUrl" class="input" value="${esc(state.apiBaseUrl)}" required></label><button class="button primary section" type="submit">Save connection settings</button></form><div class="grid cols-2 section"><div class="mini-item"><span>ASP.NET Core API /health</span><span class="tag ${state.apiStatus === 'healthy' ? 'low' : 'high'}">${esc(state.apiStatus.toUpperCase())}</span></div><div class="mini-item"><span>FastAPI ML /health</span><span class="tag ${state.mlStatus === 'healthy' ? 'low' : 'high'}">${esc(state.mlStatus.toUpperCase())}</span></div></div><button class="button small section" data-action="refresh-health">Test connections</button></section><section class="card section">${sectionTitle('Authentication storage', 'Access token is scoped to this browser tab')}<p>Sign out to clear the current access token. Do not use an untrusted browser for analyst credentials.</p></section>`;
+	const registry = state.modelData?.registry;
+	const activeModel = registry?.threshold_selection?.best_model_by_training_oof_cost;
+	const threshold = registry?.models?.[activeModel]?.chosen_threshold;
+	const modelStatus = activeModel
+		? `<p>Active model: <strong>${esc(activeModel)}</strong> · version ${esc(registry.model_version ?? 'Unavailable')} · threshold ${threshold === undefined ? 'Unavailable' : esc(Number(threshold).toFixed(4))}</p>`
+		: warning('Active model details are unavailable from the ML service.');
+	return `<section class="card">${sectionTitle('Service addresses', 'The API securely proxies ML health and registry requests')}<form id="settings-form"><label class="form-group">ASP.NET Core API base URL<input name="apiBaseUrl" class="input" value="${esc(state.apiBaseUrl)}" required></label><button class="button primary section" type="submit">Save connection settings</button></form><div class="grid cols-2 section"><div class="mini-item"><span>ASP.NET Core API /health</span><span class="tag ${state.apiStatus === 'healthy' ? 'low' : 'high'}">${esc(state.apiStatus.toUpperCase())}</span></div><div class="mini-item"><span>FastAPI ML /health</span><span class="tag ${state.mlStatus === 'healthy' ? 'low' : 'high'}">${esc(state.mlStatus.toUpperCase())}</span></div></div>${modelStatus}<button class="button small section" data-action="refresh-health">Test connections</button></section><section class="card section">${sectionTitle('Authentication storage', 'Access token is scoped to this browser tab')}<p>Sign out to clear the current access token. Do not use an untrusted browser for analyst credentials.</p></section>`;
 }
 
 function pageContent() {
@@ -360,6 +349,11 @@ function render() {
 }
 
 function navigate(page, push = true) {
+	if (!state.token || page === 'login') {
+		state.page = 'login';
+		render();
+		return;
+	}
 	state.page = page;
 	state.mobileMenu = false;
 	if (push) history.pushState({ page }, '', `#${ROUTES[page] || ROUTES.overview}`);
@@ -368,19 +362,27 @@ function navigate(page, push = true) {
 }
 
 async function loadPageData(page) {
-	if (state.demoMode) {
-		state.customers = DEMO_CUSTOMERS;
-		state.predictions = DEMO_PREDICTIONS;
-		state.campaigns = DEMO_CAMPAIGNS;
-		if (page === 'overview') state.dashboard = null;
+	if (!state.token) {
+		state.page = 'login';
 		render();
 		return;
 	}
 	try {
+		state.lastError = '';
 		if (page === 'overview') {
-			state.dashboard = await request('/api/dashboard/summary');
+			const [dashboard, customers, predictions, modelData] = await Promise.all([
+				request('/api/dashboard/summary'),
+				request('/api/customers'),
+				request('/api/predictions'),
+				requestMl('/models')
+			]);
+			state.dashboard = dashboard;
+			state.customers = customers;
+			state.predictions = predictions;
+			state.modelData = modelData;
 			state.apiStatus = 'healthy';
-		} else if (page === 'customers' || page === 'customer' || page === 'explain' || page === 'campaigns' || page === 'outcomes') {
+			state.mlStatus = 'healthy';
+		} else if (page === 'customers' || page === 'customer' || page === 'explain' || page === 'campaigns') {
 			const [customers, predictions] = await Promise.all([
 				request('/api/customers'),
 				request('/api/predictions')
@@ -388,25 +390,40 @@ async function loadPageData(page) {
 			state.customers = customers;
 			state.predictions = predictions;
 			state.apiStatus = 'healthy';
-			if (page === 'campaigns' || page === 'outcomes') state.campaigns = await request('/api/campaigns');
-			if ((page === 'outcomes' || page === 'campaigns') && state.audienceCampaignId !== null) {
+			if (page === 'campaigns') {
+				state.campaigns = await request('/api/campaigns');
+			}
+			if (page === 'campaigns' && state.audienceCampaignId !== null) {
 				state.audience = await request(`/api/campaigns/${state.audienceCampaignId}/customers`);
 			}
+		} else if (page === 'outcomes') {
+			state.campaigns = await request('/api/campaigns');
+			state.apiStatus = 'healthy';
+			if (state.audienceCampaignId === null && state.campaigns.length) {
+				state.audienceCampaignId = value(state.campaigns[0], 'id');
+			}
+			state.audience = state.audienceCampaignId === null
+				? []
+				: await request(`/api/campaigns/${state.audienceCampaignId}/customers`);
 		} else if (page === 'reports') {
 			state.modelData = await requestMl('/models');
 			state.mlStatus = 'healthy';
+			state.apiStatus = 'healthy';
+		} else if (page === 'settings') {
+			state.modelData = await requestMl('/models');
+			state.apiStatus = 'healthy';
+			state.mlStatus = 'healthy';
 		}
-		state.lastError = '';
 	} catch (error) {
 		state.lastError = error.message;
-		state.apiStatus = page === 'reports' ? state.apiStatus : 'unavailable';
-		if (error instanceof TypeError || /failed to fetch/i.test(error.message)) {
-			state.demoMode = true;
-			state.dashboard = null;
-			state.customers = DEMO_CUSTOMERS;
-			state.predictions = DEMO_PREDICTIONS;
-			state.campaigns = DEMO_CAMPAIGNS;
-		}
+		state.apiStatus = 'unavailable';
+		if (page === 'overview' || page === 'reports') state.mlStatus = 'unavailable';
+		state.dashboard = null;
+		state.customers = [];
+		state.predictions = [];
+		state.campaigns = [];
+		state.audience = [];
+		state.modelData = null;
 		notify(error.message, true);
 	}
 	render();
@@ -414,14 +431,34 @@ async function loadPageData(page) {
 
 async function refreshHealth() {
 	const checks = await Promise.allSettled([
-		fetch(apiUrl('/health')).then(response => {
+		(async () => {
+			const response = await fetch(apiUrl('/health'));
 			if (!response.ok) throw new Error(`API returned ${response.status}`);
 			return response.json();
-		}),
+		})(),
 		requestMl('/health')
 	]);
 	state.apiStatus = checks[0].status === 'fulfilled' && checks[0].value.status === 'healthy' ? 'healthy' : 'unavailable';
 	state.mlStatus = checks[1].status === 'fulfilled' && checks[1].value.status === 'healthy' ? 'healthy' : 'unavailable';
+	if (state.apiStatus !== 'healthy' || state.mlStatus !== 'healthy') {
+		const apiFailure = checks[0].status === 'rejected' ? `: ${checks[0].reason.message}` : '';
+		const mlFailure = checks[1].status === 'rejected' ? `: ${checks[1].reason.message}` : '';
+		state.lastError = state.apiStatus !== 'healthy'
+			? `ASP.NET Core API health check failed${apiFailure}.`
+			: `FastAPI ML service health check failed${mlFailure}.`;
+		if (state.apiStatus !== 'healthy') {
+			state.dashboard = null;
+			state.customers = [];
+			state.predictions = [];
+			state.campaigns = [];
+			state.audience = [];
+			state.modelData = null;
+		} else {
+			state.modelData = null;
+		}
+	} else {
+		state.lastError = '';
+	}
 	render();
 	if (state.apiStatus !== 'healthy' || state.mlStatus !== 'healthy') {
 		notify('One or more services are unavailable. Check the configured URLs and CORS.', true);
@@ -452,7 +489,6 @@ async function authenticate(mode, form) {
 	state.token = result.accessToken;
 	sessionStorage.setItem('retenscope-access-token', state.token);
 	state.user = await request('/api/auth/me');
-	state.demoMode = false;
 	state.lastError = '';
 	state.page = 'overview';
 	history.replaceState({ page: 'overview' }, '', `#${ROUTES.overview}`);
@@ -461,7 +497,7 @@ async function authenticate(mode, form) {
 }
 
 async function runPrediction() {
-	if (state.demoMode || !state.customerId) return;
+	if (!state.token || !state.customerId) return;
 	try {
 		const result = await request(`/api/predictions/${encodeURIComponent(state.customerId)}`, { method: 'POST' });
 		state.predictions = [result, ...state.predictions.filter(item => Number(value(item, 'id')) !== Number(value(result, 'id')))];
@@ -585,15 +621,6 @@ async function saveOutcome(form) {
 	}
 }
 
-function useDemoMode() {
-	state.token = '';
-	state.user = null;
-	state.demoMode = true;
-	sessionStorage.removeItem('retenscope-access-token');
-	state.page = 'overview';
-	void loadPageData('overview');
-}
-
 function bindEvents() {
 	document.addEventListener('click', event => {
 		const page = event.target.closest('[data-page]');
@@ -608,12 +635,17 @@ function bindEvents() {
 		const status = event.target.closest('[data-campaign-status]');
 		if (status) return void changeCampaignStatus(status.dataset.campaignStatus);
 		const action = event.target.closest('[data-action]')?.dataset.action;
-		if (action === 'demo') return useDemoMode();
 		if (action === 'signout') {
 			state.token = '';
 			state.user = null;
-			state.demoMode = true;
 			sessionStorage.removeItem('retenscope-access-token');
+			state.dashboard = null;
+			state.customers = [];
+			state.predictions = [];
+			state.campaigns = [];
+			state.audience = [];
+			state.modelData = null;
+			state.lastError = '';
 			state.page = 'login';
 			render();
 		} else if (action === 'predict') {
@@ -640,7 +672,11 @@ function bindEvents() {
 		if (event.target.id === 'auth-form') {
 			event.preventDefault();
 			const mode = event.submitter?.dataset.authMode || 'login';
-			void authenticate(mode, event.target).catch(error => notify(error.message, true));
+			void authenticate(mode, event.target).catch(error => {
+				state.lastError = error.message;
+				render();
+				notify(error.message, true);
+			});
 			return;
 		}
 		if (event.target.id === 'campaign-form') {
@@ -675,24 +711,21 @@ function bindEvents() {
 async function initialize() {
 	bindEvents();
 	const route = location.hash.replace(/^#/, '');
-	state.page = Object.keys(ROUTES).find(key => ROUTES[key] === route) || (state.token ? 'overview' : 'login');
+	const requestedPage = Object.keys(ROUTES).find(key => ROUTES[key] === route);
+	state.page = state.token ? requestedPage || 'overview' : 'login';
 	if (state.token) {
 		try {
 			state.user = await request('/api/auth/me');
-			state.demoMode = false;
 		} catch {
 			state.token = '';
 			sessionStorage.removeItem('retenscope-access-token');
-			state.demoMode = true;
+			state.user = null;
+			state.page = 'login';
+			state.lastError = 'Your session is no longer valid. Sign in again.';
 		}
 	}
 	render();
-	if (state.demoMode) {
-		state.customers = DEMO_CUSTOMERS;
-		state.predictions = DEMO_PREDICTIONS;
-		state.campaigns = DEMO_CAMPAIGNS;
-		render();
-	} else {
+	if (state.token) {
 		void loadPageData(state.page);
 	}
 	void refreshHealth();
@@ -700,7 +733,7 @@ async function initialize() {
 
 window.addEventListener('popstate', () => {
 	const route = location.hash.replace(/^#/, '');
-	const page = Object.keys(ROUTES).find(key => ROUTES[key] === route) || 'overview';
+	const page = Object.keys(ROUTES).find(key => ROUTES[key] === route) || (state.token ? 'overview' : 'login');
 	navigate(page, false);
 });
 

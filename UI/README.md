@@ -8,7 +8,7 @@ The UI is a dependency-free static HTML/CSS/JavaScript client for the ASP.NET Co
 python -m http.server 5500
 ```
 
-Open `http://localhost:5500`. The default API address is `http://localhost:8080`; it can be changed on the sign-in screen or under Model & settings. Sign in with an analyst account or select demo mode to use clearly labeled illustrative data.
+Open `http://localhost:5500`. The default API address is `http://localhost:8080`; it can be changed on the sign-in screen or under Model & settings. An analyst must sign in or create an account through the API before accessing workspace data.
 
 The browser stores the API address in local storage and keeps the bearer token in session storage. Use HTTPS for deployed API endpoints and do not use shared browser sessions for analyst accounts.
 
@@ -34,5 +34,5 @@ The configured backend CORS allowlist includes the Pages origin `https://miqnaas
 
 - Authentication uses ASP.NET Identity `POST /login?useCookies=false` and `POST /register`; the bearer token is attached to protected `/api/*` requests.
 - Customer, prediction, dashboard, CSV import, campaign, audience, and campaign outcome views use the corresponding ASP.NET API endpoints.
-- Saved prediction `topFactors` are rendered as signed SHAP contribution bars. Demo mode is clearly labeled and never reports mock values as live predictions.
+- Saved prediction `topFactors` are rendered as signed SHAP contribution bars. The UI has no seeded customers, predictions, campaigns, outcomes, or model metrics; an unavailable API produces a visible error instead of substitute data.
 - Service health is queried through `/health` and `/api/ml/health`; the model registry and evaluation table are loaded from `/api/ml/models`.

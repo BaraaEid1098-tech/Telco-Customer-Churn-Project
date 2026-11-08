@@ -1,0 +1,65 @@
+.shap-list {
+	display: grid;
+	gap: 16px;
+}
+
+.shap-row {
+	display: grid;
+	gap: 7px;
+}
+
+.shap-meta {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 13px;
+}
+
+.shap-value {
+	font-variant-numeric: tabular-nums;
+	font-weight: 900;
+}
+
+.shap-value.positive {
+	color: var(--rs-forest);
+}
+
+.shap-value.negative {
+	color: var(--rs-danger);
+}
+
+.shap-track {
+	height: 8px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--rs-line);
+}
+
+.shap-track span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+}
+
+.shap-track span.positive {
+	background: var(--rs-forest);
+}
+
+.shap-track span.negative {
+	background: var(--rs-burgundy);
+}
+
+.outcome-form {
+	margin-top: 14px;
+}
+
+.toast.error {
+	background: var(--rs-danger);
+}
+
+@media (max-width: 760px) {
+	.shap-meta {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}

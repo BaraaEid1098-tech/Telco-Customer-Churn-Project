@@ -87,5 +87,21 @@ services:
       - "8080:8080"
     restart: unless-stopped
 
+  ui:
+    build:
+      context: ./UI
+      dockerfile: Dockerfile
+    container_name: churn-ui
+    depends_on:
+      - api
+    ports:
+      - "8081:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
 volumes:
   sqlserver-data:

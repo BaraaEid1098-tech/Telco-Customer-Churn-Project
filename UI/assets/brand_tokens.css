@@ -1,0 +1,28 @@
+/* RetenScope brand tokens - Concept 01 */
+:root {
+  --rs-pine: #103B36;
+  --rs-forest: #15574B;
+  --rs-burgundy: #7A2032;
+  --rs-ivory: #F7F2E9;
+  --rs-white: #FFFFFF;
+  --rs-ink: #182C2C;
+  --rs-muted: #647874;
+  --rs-line: #DCE7E0;
+  --rs-mint: #8DD9BF;
+  --rs-amber: #C78A43;
+  --rs-danger: #AE4052;
+  --rs-sage: #DCEDE4;
+  --rs-lightred: #F8E9EC;
+  --rs-lightamber: #FFF1D9;
+  --rs-lightteal: #E5F3EF;
+  --rs-charcoal: #213B3B;
+  --rs-sky: #73A9B5;
+  --rs-brown: #8A613D;
+  --rs-font: "Lato", "Arial", sans-serif;
+  --rs-radius-card: 16px;
+  --rs-radius-chip: 11px;
+  --rs-space-unit: 8px;
+}
+.rs-risk-high { background: var(--rs-lightred); color: var(--rs-burgundy); }
+.rs-risk-medium { background: var(--rs-lightamber); color: var(--rs-ink); }
+.rs-risk-low { background: var(--rs-lightteal); color: var(--rs-forest); }

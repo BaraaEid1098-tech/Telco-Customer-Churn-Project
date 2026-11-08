@@ -5,7 +5,7 @@ A GitHub-ready monorepo for customer churn data exploration, reproducible model 
 ## Architecture
 
 ```text
-Flutter UI (UI placeholder)
+RetenScope Web UI (UI/)
           |
           v
 ASP.NET Core 9 API (BackEnd/Churn.API)
@@ -17,7 +17,7 @@ SQL Server   Redis     FastAPI ML Service
                    Model artifacts  SHAP
 ```
 
-- **Flutter UI:** `UI/` is reserved for the client; it currently contains only a placeholder.
+- **RetenScope Web UI:** static HTML/CSS/JavaScript client in `UI/` for analyst authentication, customer scoring, SHAP explanations, imports, campaigns, and outcomes.
 - **ASP.NET Core API:** Clean Architecture projects under `BackEnd/`; owns customer, prediction, campaign, authentication, and dashboard endpoints.
 - **FastAPI ML service:** `ML/app/`; loads the checked-in preprocessing contract and trained models and serves predictions and SHAP explanations.
 - **SQL Server 2022:** stores customers, predictions, campaigns, and campaign outcomes. Compose restores the included backup on first startup.
@@ -44,6 +44,13 @@ ML/
   training/                   reproducible training/evaluation script
   Dockerfile
   requirements.txt
+UI/
+  app.js                       Static UI and API client
+  assets/                      Brand logos and tokens
+  Dockerfile                   Nginx static hosting
+  integration.css
+  index.html
+  nginx.conf
 scripts/
   restore-db.sh
 docker-compose.yml
@@ -89,19 +96,20 @@ Requirements: Docker Engine and Compose v2.
    docker compose up --build -d
    ```
 
-   Compose starts SQL Server and Redis, restores `DB/ChurnPredictionDB.bak` through the one-shot `db-init` service, starts the ML service, then starts the API after its dependencies report healthy.
+   Compose starts SQL Server and Redis, restores `DB/ChurnPredictionDB.bak` through the one-shot `db-init` service, starts the ML service and API, then serves the UI through Nginx.
 
 3. Check services and logs:
 
    ```bash
    docker compose ps
-   docker compose logs -f ml-service api db-init
+   docker compose logs -f ui api ml-service db-init
    ```
 
 Service URLs:
 
 | Service | Host address |
 |---|---|
+| RetenScope UI | `http://localhost:8081` |
 | ASP.NET Core API | `http://localhost:8080` |
 | API Swagger (Development) | `http://localhost:8080/swagger` |
 | API health | `http://localhost:8080/health` |
@@ -111,7 +119,9 @@ Service URLs:
 | SQL Server | `127.0.0.1:1433` |
 | Redis | Compose network only, `redis:6379` |
 
-The API connects to the ML service at `http://ml-service:8000/` over the Compose network. Set `ML_SERVICE_BASE_URL` only when intentionally overriding that address. The SQL port is bound to loopback; the ML and API ports are published on the host.
+The API connects to the ML service at `http://ml-service:8000/` over the Compose network. Set `ML_SERVICE_BASE_URL` only when intentionally overriding that address. The browser uses the API as its entry point; authenticated `/api/ml/models` and public `/api/ml/health` proxy requests to FastAPI within the Compose network. CORS allows the configured local frontend origins and `https://miqnaas.github.io`; additional origins can be set using `Cors:AllowedOrigins` or comma-separated `CORS_ALLOWED_ORIGINS`. The SQL port is bound to loopback; the UI, ML and API ports are published on the host.
+
+Open the UI at `http://localhost:8081` and sign in with an analyst account, or select demo mode to explore clearly labeled sample data. For local static development, run `cd UI && python -m http.server 5500`. The API address defaults to `http://localhost:8080` and can be changed on the sign-in page or under Settings. GitHub Pages serves only the UI; live use requires a publicly reachable HTTPS API and an allowed CORS origin.
 
 The SQL data volume persists across normal container replacement. Avoid `docker compose down -v` unless you intentionally want to delete that database volume. The API does not automatically apply EF Core migrations at startup; its database must match the checked-in schema/backup.
 
@@ -140,6 +150,8 @@ Most ASP.NET application endpoints require a bearer token. The Identity endpoint
 | Service | Method and route | Description |
 |---|---|---|
 | API | `GET /health` | API health |
+| API | `GET /api/ml/health` | Proxied FastAPI health status |
+| API | `GET /api/ml/models` | Authenticated ML registry and evaluation rows |
 | API | `GET/POST /api/customers`, `GET/PUT/DELETE /api/customers/{id}` | Customer management |
 | API | `POST /api/imports/customers/csv` | Import CSV using multipart field `file` |
 | API | `GET /api/predictions`, `GET /api/predictions/{id}` | Read saved predictions |

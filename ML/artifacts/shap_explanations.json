@@ -1,0 +1,111 @@
+{
+  "customer_index": "437",
+  "explained_class": 1,
+  "best_model": "Random Forest",
+  "top_features_by_absolute_contribution": {
+    "Random Forest": [
+      {
+        "feature": "Contract_Two year",
+        "shap_value": -0.15932670845481195,
+        "direction": "negative"
+      },
+      {
+        "feature": "tenure",
+        "shap_value": -0.13893180278348805,
+        "direction": "negative"
+      },
+      {
+        "feature": "TotalCharges",
+        "shap_value": -0.08473346268597261,
+        "direction": "negative"
+      },
+      {
+        "feature": "InternetService_Fiber optic",
+        "shap_value": 0.04051523052585771,
+        "direction": "positive"
+      },
+      {
+        "feature": "OnlineSecurity_Yes",
+        "shap_value": -0.036271847327742995,
+        "direction": "negative"
+      },
+      {
+        "feature": "TechSupport_Yes",
+        "shap_value": -0.026229225883612445,
+        "direction": "negative"
+      },
+      {
+        "feature": "PaymentMethod_Electronic check",
+        "shap_value": -0.024853332006671995,
+        "direction": "negative"
+      },
+      {
+        "feature": "OnlineBackup_Yes",
+        "shap_value": -0.0178076820347483,
+        "direction": "negative"
+      },
+      {
+        "feature": "Dependents_Yes",
+        "shap_value": -0.016817944771454017,
+        "direction": "negative"
+      },
+      {
+        "feature": "InternetService_No",
+        "shap_value": 0.011563782362782254,
+        "direction": "positive"
+      }
+    ],
+    "Decision Tree": [
+      {
+        "feature": "Contract_Two year",
+        "shap_value": -0.35369635647015174,
+        "direction": "negative"
+      },
+      {
+        "feature": "tenure",
+        "shap_value": -0.1054541244332987,
+        "direction": "negative"
+      },
+      {
+        "feature": "TotalCharges",
+        "shap_value": -0.09779311333191539,
+        "direction": "negative"
+      },
+      {
+        "feature": "InternetService_Fiber optic",
+        "shap_value": 0.03371824286533616,
+        "direction": "positive"
+      },
+      {
+        "feature": "Contract_One year",
+        "shap_value": 0.024727864267693946,
+        "direction": "positive"
+      },
+      {
+        "feature": "PaymentMethod_Electronic check",
+        "shap_value": -0.019743601368501194,
+        "direction": "negative"
+      },
+      {
+        "feature": "StreamingMovies_Yes",
+        "shap_value": 0.01173515697444327,
+        "direction": "positive"
+      },
+      {
+        "feature": "OnlineSecurity_Yes",
+        "shap_value": -0.007839479004230307,
+        "direction": "negative"
+      },
+      {
+        "feature": "MonthlyCharges",
+        "shap_value": 0.007032742776760173,
+        "direction": "positive"
+      },
+      {
+        "feature": "PhoneService_Yes",
+        "shap_value": -0.004484474587248702,
+        "direction": "negative"
+      }
+    ]
+  }
+}
